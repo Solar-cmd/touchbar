@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>local.touchbar</string>
+  <key>ProgramArguments</key><array><string>__APP__/Contents/MacOS/touchbar</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>5</integer>
+  <key>ProcessType</key><string>Interactive</string>
+  <key>EnvironmentVariables</key><dict>
+    <key>TB_ROTATE</key><string>90</string>
+    <key>TB_TOUCH_SCALE</key><string>1.0</string>
+    <key>TB_TOUCH_OFFSET</key><string>0.0</string>
+  </dict>
+  <key>StandardErrorPath</key><string>/tmp/touchbar.log</string>
+</dict></plist>
