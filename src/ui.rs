@@ -174,9 +174,10 @@ impl Ui {
             };
             let (slider_min, slider_max) = (accessory(), accessory());
 
-            // Grabber: a Control Strip button with the stock chevrons, wider than stock to be easy to hit.
+            // Grabber: a rounded key with the stock chevrons, wider than stock to be easy to hit.
             let chevrons = [image("NSTouchBarGoBackTemplate"), image("NSTouchBarGoForwardTemplate")];
             let grabber = image_button(chevrons[0]);
+            let _: () = msg_send![grabber, setAppearance: fn_row]; // rounded key bezel, like the F-keys
             add(root, grabber);
 
             Ui { w, h, root, fkeys, platter, bright, volume, volume_glyphs, mute, mute_glyphs, close, slider, slider_min, slider_max, grabber, chevrons }
