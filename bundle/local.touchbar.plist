@@ -8,9 +8,8 @@
   <key>ThrottleInterval</key><integer>5</integer>
   <key>ProcessType</key><string>Interactive</string>
   <key>EnvironmentVariables</key><dict>
-    <key>TB_ROTATE</key><string>90</string>
-    <key>TB_TOUCH_SCALE</key><string>1.0</string>
-    <key>TB_TOUCH_OFFSET</key><string>0.0</string>
+    <key>TB_WIDTH</key><string>1004</string>
+    <key>TB_HEIGHT</key><string>30</string>
   </dict>
   <key>StandardErrorPath</key><string>/tmp/touchbar.log</string>
 </dict></plist>

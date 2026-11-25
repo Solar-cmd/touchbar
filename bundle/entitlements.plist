@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <!-- Lets WindowServer hand the Touch Bar panel to this process (same as TouchBarServer). -->
-  <key>com.apple.private.SkyLight.touchbar</key><true/>
-</dict></plist>
