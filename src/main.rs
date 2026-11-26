@@ -234,6 +234,36 @@ fn nsstring(s: &str) -> Id {
     unsafe { msg_send![class!(NSString), stringWithUTF8String: c.as_ptr()] }
 }
 
+/// The F-keys go out via `CGEventPost`, which macOS silently drops unless this process
+/// is trusted for Accessibility. If we're not, pop the system prompt pointing the user
+/// at System Settings → Privacy & Security → Accessibility.
+fn ensure_accessibility() {
+    unsafe {
+        if AXIsProcessTrusted() {
+            eprintln!("touchbar: accessibility granted (F-keys will post)");
+            return;
+        }
+        let key = kAXTrustedCheckOptionPrompt as *const c_void;
+        let val = kCFBooleanTrue as *const c_void;
+        let opts = CFDictionaryCreate(
+            std::ptr::null(),
+            &key,
+            &val,
+            1,
+            &kCFTypeDictionaryKeyCallBacks as *const _ as *const c_void,
+            &kCFTypeDictionaryValueCallBacks as *const _ as *const c_void,
+        );
+        AXIsProcessTrustedWithOptions(opts);
+        if !opts.is_null() {
+            CFRelease(opts);
+        }
+        eprintln!(
+            "touchbar: NOT accessibility-trusted — F-keys won't work until you add this \
+             binary in System Settings > Privacy & Security > Accessibility, then relaunch"
+        );
+    }
+}
+
 fn build_delegate() -> Id {
     unsafe {
         let mut b = ClassBuilder::new(c"TBDelegate", class!(NSObject)).expect("register TBDelegate");
@@ -265,6 +295,8 @@ fn main() {
     unsafe {
         let app_obj: Id = msg_send![class!(NSApplication), sharedApplication];
         let _: () = msg_send![app_obj, setActivationPolicy: 1isize]; // accessory
+
+        ensure_accessibility();
 
         let delegate = build_delegate();
         let ui = Ui::new(w, h, delegate);

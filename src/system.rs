@@ -5,10 +5,15 @@ use std::ptr::null;
 
 pub const KC_F: [u16; 12] = [122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111];
 
+// NX_SECONDARYFNMASK: marks the event as if `fn` were held, so F1–F12 arrive as the
+// real function keys rather than the media actions they default to on these keyboards.
+const FLAG_FN: u64 = 0x80_0000;
+
 pub fn key(code: u16, down: bool) {
     unsafe {
         let e = CGEventCreateKeyboardEvent(null(), code, down);
         if !e.is_null() {
+            CGEventSetFlags(e, FLAG_FN);
             CGEventPost(0, e);
             CFRelease(e as _);
         }

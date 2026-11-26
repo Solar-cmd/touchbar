@@ -71,11 +71,31 @@ extern "C" {
     ) -> CFRunLoopTimerRef;
     pub fn CFRunLoopTimerSetNextFireDate(t: CFRunLoopTimerRef, date: f64);
     pub fn CFAbsoluteTimeGetCurrent() -> f64;
+    pub static kCFBooleanTrue: CFTypeRef;
+    pub static kCFTypeDictionaryKeyCallBacks: c_void;
+    pub static kCFTypeDictionaryValueCallBacks: c_void;
+    pub fn CFDictionaryCreate(
+        alloc: *const c_void,
+        keys: *const *const c_void,
+        values: *const *const c_void,
+        num: isize,
+        key_cb: *const c_void,
+        val_cb: *const c_void,
+    ) -> CFTypeRef;
+}
+
+// --- Accessibility trust: CGEventPost (the F-keys) is dropped unless we're trusted.
+#[link(name = "ApplicationServices", kind = "framework")]
+extern "C" {
+    pub static kAXTrustedCheckOptionPrompt: CFStringRef;
+    pub fn AXIsProcessTrusted() -> bool;
+    pub fn AXIsProcessTrustedWithOptions(options: CFTypeRef) -> bool;
 }
 
 #[link(name = "CoreGraphics", kind = "framework")]
 extern "C" {
     pub fn CGEventCreateKeyboardEvent(src: *const c_void, key: u16, down: bool) -> CGEventRef;
+    pub fn CGEventSetFlags(e: CGEventRef, flags: u64);
     pub fn CGEventPost(tap: u32, e: CGEventRef);
     pub fn CGGetOnlineDisplayList(max: u32, ids: *mut u32, count: *mut u32) -> i32;
     pub fn CGDisplayIsBuiltin(id: u32) -> bool;
