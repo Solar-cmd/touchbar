@@ -12,7 +12,7 @@ mod system;
 mod ui;
 
 use ffi::*;
-use objc2::runtime::{AnyObject, ClassBuilder, Sel};
+use objc2::runtime::{AnyObject, Bool, ClassBuilder, Sel};
 use objc2::{class, msg_send, sel};
 use std::ffi::c_void;
 use std::ptr::null_mut;
@@ -141,6 +141,39 @@ extern "C" fn chevron(_this: Id, _sel: Sel, _sender: Id) {
     });
 }
 
+// Swipe on the bar (confined to the right edge by should_receive_touch). A pan is
+// discrete here: we act once, at the end, on its net horizontal translation.
+extern "C" fn swipe(_this: Id, _sel: Sel, g: Id) {
+    let state: isize = unsafe { msg_send![g, state] };
+    if state != 3 {
+        return; // not NSGestureRecognizerStateEnded
+    }
+    with_app(|app| unsafe {
+        let view: Id = msg_send![g, view];
+        let tr: CGPoint = msg_send![g, translationInView: view];
+        // Swipe left opens the platter, swipe right closes it.
+        if tr.x <= -20.0 && !app.expanded {
+            app.set_expanded(true);
+        } else if tr.x >= 20.0 && app.expanded {
+            app.set_expanded(false);
+        }
+    });
+}
+
+// Let the swipe recognizer see a touch only when it starts near the right edge and no
+// slider is open — so it never steals an F-key tap or a slider drag.
+extern "C" fn should_receive_touch(_this: Id, _sel: Sel, g: Id, touch: Id) -> Bool {
+    with_app(|app| unsafe {
+        if app.slider.is_some() {
+            return Bool::NO;
+        }
+        let view: Id = msg_send![g, view];
+        let loc: CGPoint = msg_send![touch, locationInView: view];
+        Bool::new(loc.x >= app.ui.width() - 160.0)
+    })
+    .unwrap_or(Bool::NO)
+}
+
 extern "C" fn open_bright(_this: Id, _sel: Sel, _sender: Id) {
     with_app(|app| app.open_slider(SliderKind::Brightness));
 }
@@ -215,6 +248,11 @@ fn build_delegate() -> Id {
         b.add_method(sel!(mute:), mute as extern "C" fn(Id, Sel, Id));
         b.add_method(sel!(sliderMoved:), slider_moved as extern "C" fn(Id, Sel, Id));
         b.add_method(sel!(closeSlider:), close_slider as extern "C" fn(Id, Sel, Id));
+        b.add_method(sel!(swipe:), swipe as extern "C" fn(Id, Sel, Id));
+        b.add_method(
+            sel!(gestureRecognizer:shouldReceiveTouch:),
+            should_receive_touch as extern "C" fn(Id, Sel, Id, Id) -> Bool,
+        );
         let cls = b.register();
         msg_send![cls, new]
     }

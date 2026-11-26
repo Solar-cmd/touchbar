@@ -153,6 +153,16 @@ impl Ui {
             let _: () = msg_send![grabber, setAppearance: fn_row];
             add(root, grabber);
 
+            // A swipe from the right edge expands/collapses the platter without having to
+            // hit the small chevron. Direct touch types let the recognizer see finger drags
+            // on the bar; the delegate confines it to the right edge (see shouldReceiveTouch).
+            let _: () = msg_send![root, setAllowedTouchTypes: 1usize]; // NSTouchTypeMaskDirect
+            let pan: Id = msg_send![class!(NSPanGestureRecognizer), alloc];
+            let pan: Id = msg_send![pan, initWithTarget: delegate, action: sel!(swipe:)];
+            let _: () = msg_send![pan, setAllowedTouchTypes: 1usize];
+            let _: () = msg_send![pan, setDelegate: delegate];
+            let _: () = msg_send![root, addGestureRecognizer: pan];
+
             Ui {
                 w, h, root, fkeys, platter, bright, volume, volume_glyphs, mute, mute_glyphs,
                 close, slider, slider_min, slider_max, grabber, chevrons,
@@ -162,6 +172,10 @@ impl Ui {
 
     pub fn root(&self) -> Id {
         self.root
+    }
+
+    pub fn width(&self) -> f64 {
+        self.w
     }
 
     fn close_x(&self) -> f64 {
